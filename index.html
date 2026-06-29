@@ -1,1257 +1,760 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Anchorism's Executor — Roblox Scripting Tools</title>
-    <style>
-        /* ===== RESET & BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0a0e1a;
-            color: #e0e6ff;
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* ===== PARTICLES CANVAS ===== */
-        #particles-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* ===== GLOW ORB ===== */
-        #glow-orb {
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(30, 100, 255, 0.12), transparent 70%);
-            filter: blur(80px);
-            z-index: 0;
-            pointer-events: none;
-            animation: floatGlow 12s ease-in-out infinite alternate;
-        }
-
-        @keyframes floatGlow {
-            0% { transform: translate(-10%, -10%) scale(1); }
-            50% { transform: translate(10%, 15%) scale(1.2); }
-            100% { transform: translate(-5%, 5%) scale(0.9); }
-        }
-
-        /* ===== LAYOUT CONTAINER ===== */
-        .site-wrapper {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ===== NAVBAR ===== */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 16px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(10, 14, 26, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 140, 255, 0.15);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .navbar.scrolled {
-            background: rgba(10, 14, 26, 0.85);
-            box-shadow: 0 4px 30px rgba(0, 100, 255, 0.08);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .logo-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #0088ff, #0055cc);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            box-shadow: 0 0 20px rgba(0, 136, 255, 0.3);
-        }
-
-        .logo span {
-            background: linear-gradient(135deg, #e0eaff, #6ab0ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 28px;
-            list-style: none;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: rgba(224, 230, 255, 0.7);
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: color 0.3s;
-            position: relative;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #0088ff;
-            transition: width 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: #fff;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .nav-cta {
-            background: linear-gradient(135deg, #0088ff, #0055cc);
-            color: #fff !important;
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .nav-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 136, 255, 0.35);
-        }
-
-        .nav-cta::after { display: none !important; }
-
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            cursor: pointer;
-        }
-
-        .hamburger span {
-            width: 26px;
-            height: 2px;
-            background: #e0e6ff;
-            border-radius: 2px;
-            transition: all 0.3s;
-        }
-
-        /* ===== HERO ===== */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 120px 24px 80px;
-            position: relative;
-        }
-
-        .hero-content {
-            max-width: 820px;
-        }
-
-        .hero-badge {
-            display: inline-block;
-            background: rgba(0, 136, 255, 0.12);
-            border: 1px solid rgba(0, 136, 255, 0.25);
-            border-radius: 50px;
-            padding: 6px 18px;
-            font-size: 0.85rem;
-            color: #6ab0ff;
-            margin-bottom: 24px;
-            letter-spacing: 1px;
-            backdrop-filter: blur(4px);
-        }
-
-        .hero h1 {
-            font-size: clamp(2.8rem, 7vw, 5.2rem);
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 20px;
-        }
-
-        .hero h1 .highlight {
-            background: linear-gradient(135deg, #0088ff, #4dc9f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: rgba(224, 230, 255, 0.7);
-            max-width: 600px;
-            margin: 0 auto 40px;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #0088ff, #0055cc);
-            color: #fff;
-            padding: 14px 36px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 1rem;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(0, 136, 255, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: #e0e6ff;
-            padding: 14px 36px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(0, 136, 255, 0.3);
-            transform: translateY(-3px);
-        }
-
-        .hero-stats {
-            display: flex;
-            gap: 40px;
-            justify-content: center;
-            margin-top: 50px;
-            flex-wrap: wrap;
-        }
-
-        .hero-stat {
-            text-align: center;
-        }
-
-        .hero-stat .number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .hero-stat .label {
-            font-size: 0.85rem;
-            color: rgba(224, 230, 255, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* ===== SECTION COMMON ===== */
-        section {
-            padding: 100px 24px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section-title {
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
-        .section-sub {
-            text-align: center;
-            color: rgba(224, 230, 255, 0.6);
-            max-width: 600px;
-            margin: 0 auto 60px;
-            font-size: 1.05rem;
-        }
-
-        /* ===== FEATURES ===== */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 20px;
-            padding: 32px 24px;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #0088ff, transparent);
-            opacity: 0;
-            transition: opacity 0.4s;
-        }
-
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(0, 136, 255, 0.2);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, rgba(0, 136, 255, 0.15), rgba(0, 85, 204, 0.1));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            margin-bottom: 18px;
-        }
-
-        .feature-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .feature-card p {
-            color: rgba(224, 230, 255, 0.6);
-            font-size: 0.95rem;
-        }
-
-        /* ===== SUPPORTED GAMES ===== */
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .game-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 28px 16px;
-            text-align: center;
-            backdrop-filter: blur(8px);
-            transition: all 0.3s;
-            cursor: default;
-        }
-
-        .game-card:hover {
-            border-color: rgba(0, 136, 255, 0.2);
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .game-card .game-thumb {
-            width: 64px;
-            height: 64px;
-            border-radius: 14px;
-            margin: 0 auto 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            background: linear-gradient(135deg, rgba(0, 136, 255, 0.1), rgba(0, 85, 204, 0.05));
-        }
-
-        .game-card h4 {
-            color: #fff;
-            margin-bottom: 4px;
-        }
-
-        .game-card p {
-            color: rgba(224, 230, 255, 0.5);
-            font-size: 0.85rem;
-        }
-
-        .game-badge {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 3px 12px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            background: rgba(0, 200, 100, 0.12);
-            color: #4cd698;
-            border: 1px solid rgba(0, 200, 100, 0.15);
-        }
-
-        /* ===== DASHBOARD STATS ===== */
-        .dashboard {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 28px;
-            padding: 60px 40px;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 24px;
-            margin-top: 40px;
-        }
-
-        .dash-item {
-            text-align: center;
-            padding: 24px 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: all 0.3s;
-        }
-
-        .dash-item:hover {
-            background: rgba(0, 136, 255, 0.04);
-            border-color: rgba(0, 136, 255, 0.1);
-        }
-
-        .dash-number {
-            font-size: 2.6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #0088ff, #4dc9f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .dash-label {
-            color: rgba(224, 230, 255, 0.5);
-            font-size: 0.9rem;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* ===== FAQ ===== */
-        .faq-list {
-            max-width: 740px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .faq-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            overflow: hidden;
-            transition: all 0.3s;
-        }
-
-        .faq-item.open {
-            border-color: rgba(0, 136, 255, 0.15);
-        }
-
-        .faq-question {
-            width: 100%;
-            background: none;
-            border: none;
-            color: #e0e6ff;
-            font-size: 1rem;
-            font-weight: 500;
-            padding: 20px 24px;
-            text-align: left;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            font-family: inherit;
-        }
-
-        .faq-question .faq-arrow {
-            transition: transform 0.3s;
-            font-size: 1.2rem;
-            color: #0088ff;
-        }
-
-        .faq-item.open .faq-arrow {
-            transform: rotate(180deg);
-        }
-
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease, padding 0.3s ease;
-            padding: 0 24px;
-            color: rgba(224, 230, 255, 0.6);
-            font-size: 0.95rem;
-        }
-
-        .faq-item.open .faq-answer {
-            max-height: 300px;
-            padding: 0 24px 20px;
-        }
-
-        /* ===== DOWNLOAD PAGE ===== */
-        #download {
-            text-align: center;
-        }
-
-        .download-box {
-            max-width: 560px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 28px;
-            padding: 48px 32px;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-
-        .download-box .version {
-            display: inline-block;
-            background: rgba(0, 136, 255, 0.1);
-            color: #6ab0ff;
-            padding: 4px 14px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            margin-bottom: 20px;
-            border: 1px solid rgba(0, 136, 255, 0.15);
-        }
-
-        .download-box h2 {
-            font-size: 2rem;
-            margin-bottom: 12px;
-        }
-
-        .download-box p {
-            color: rgba(224, 230, 255, 0.6);
-            margin-bottom: 28px;
-        }
-
-        .download-btn {
-            background: linear-gradient(135deg, #0088ff, #0055cc);
-            color: #fff;
-            padding: 18px 48px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 1.15rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 8px 30px rgba(0, 136, 255, 0.25);
-        }
-
-        .download-btn:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 14px 40px rgba(0, 136, 255, 0.4);
-        }
-
-        .download-meta {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            flex-wrap: wrap;
-            color: rgba(224, 230, 255, 0.4);
-            font-size: 0.85rem;
-        }
-
-        .download-meta span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* ===== FOOTER ===== */
-        footer {
-            text-align: center;
-            padding: 40px 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            color: rgba(224, 230, 255, 0.3);
-            font-size: 0.9rem;
-        }
-
-        footer a {
-            color: #6ab0ff;
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 14px 20px;
-            }
-
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                flex-direction: column;
-                background: rgba(10, 14, 26, 0.95);
-                backdrop-filter: blur(20px);
-                padding: 20px;
-                border-bottom: 1px solid rgba(0, 140, 255, 0.1);
-                gap: 16px;
-            }
-
-            .nav-links.open {
-                display: flex;
-            }
-
-            .hamburger {
-                display: flex;
-            }
-
-            .hero {
-                padding: 100px 20px 60px;
-            }
-
-            section {
-                padding: 60px 20px;
-            }
-
-            .dashboard {
-                padding: 32px 20px;
-            }
-
-            .hero-stats {
-                gap: 24px;
-            }
-
-            .download-box {
-                padding: 32px 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-
-            .btn-primary, .btn-secondary {
-                padding: 12px 24px;
-                font-size: 0.9rem;
-            }
-
-            .dashboard-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        /* ===== SCROLL ANIMATIONS ===== */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ===== UPLOAD SIMULATION ===== */
-        .upload-progress {
-            margin: 24px auto 0;
-            max-width: 400px;
-            display: none;
-        }
-
-        .upload-progress.active {
-            display: block;
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #0088ff, #4dc9f6);
-            border-radius: 10px;
-            transition: width 0.3s;
-        }
-
-        .upload-status {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: rgba(224, 230, 255, 0.6);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anchorism's Executor — The Ultimate Roblox Executor</title>
+<meta name="description" content="Anchorism's Executor — a powerful, stable, and frequently updated Roblox executor with advanced script execution capabilities.">
+<meta name="keywords" content="anchorism executor, roblox executor, script executor, roblox exploit, UNC, fast injection">
+<meta name="author" content="Anchorism">
+<meta property="og:title" content="Anchorism's Executor">
+<meta property="og:description" content="The ultimate Roblox executor — powerful, stable, and always up to date.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#cc0000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪶</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#070707;
+--bg2:#0b0b0b;
+--surface:rgba(255,255,255,0.03);
+--surface2:rgba(255,255,255,0.07);
+--glass:rgba(255,255,255,0.04);
+--glassborder:rgba(255,255,255,0.07);
+--primary:#cc0000;
+--primarydim:rgba(204,0,0,0.12);
+--primaryglow:rgba(204,0,0,0.3);
+--secondary:#ff3333;
+--tertiary:#ff6666;
+--text:#e8edf5;
+--textdim:rgba(232,237,245,0.5);
+--textmuted:rgba(232,237,245,0.3);
+--radius:16px;
+--radius-sm:10px;
+--radius-xs:6px;
+--transition:0.35s cubic-bezier(0.22,1,0.36,1);
+--maxw:1200px;
+--navh:70px
+}
+html{scroll-behavior:smooth}
+body{
+font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+background:var(--bg);
+color:var(--text);
+overflow-x:hidden;
+line-height:1.6;
+-webkit-font-smoothing:antialiased
+}
+::selection{background:var(--primary);color:#fff}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--primary)}
+
+#loading-screen{
+position:fixed;inset:0;z-index:9999;background:var(--bg);
+display:flex;align-items:center;justify-content:center;flex-direction:column;
+transition:opacity 0.6s ease,visibility 0.6s ease
+}
+#loading-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.loading-logo{font-size:1.6rem;font-weight:400;color:var(--textdim);margin-bottom:20px;letter-spacing:6px;text-transform:uppercase}
+.loading-bar-wrap{width:200px;height:2px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.loading-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:4px;animation:loadBar 1.6s ease forwards}
+@keyframes loadBar{0%{width:0%}100%{width:100%}}
+
+#particles-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+nav{
+position:fixed;top:0;left:0;right:0;height:var(--navh);z-index:1000;
+background:rgba(7,7,7,0.7);backdrop-filter:blur(24px) saturate(1.4);
+-webkit-backdrop-filter:blur(24px) saturate(1.4);
+border-bottom:1px solid var(--glassborder);
+display:flex;align-items:center;padding:0 24px;transition:var(--transition)
+}
+nav.scrolled{background:rgba(7,7,7,0.92);box-shadow:0 4px 40px rgba(0,0,0,0.5)}
+.nav-inner{max-width:var(--maxw);width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:1.15rem;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;display:flex;align-items:center;gap:10px;letter-spacing:-0.3px}
+.nav-logo i{font-size:1rem}
+.nav-links{display:flex;align-items:center;gap:4px;list-style:none}
+.nav-links a{
+color:var(--textdim);text-decoration:none;font-size:0.82rem;font-weight:500;
+padding:7px 14px;border-radius:var(--radius-xs);transition:var(--transition);
+position:relative
+}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--surface)}
+.nav-btn{background:var(--primary);color:#fff!important;padding:7px 18px!important;border-radius:var(--radius-xs);font-weight:600!important}
+.nav-btn:hover{background:var(--secondary)!important;box-shadow:0 0 24px var(--primaryglow)!important}
+.menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer;padding:8px}
+
+section{padding:100px 24px;position:relative;z-index:1}
+.section-inner{max-width:var(--maxw);margin:0 auto}
+.section-tag{
+display:inline-block;padding:5px 14px;border-radius:100px;
+background:var(--primarydim);color:var(--secondary);font-size:0.75rem;font-weight:600;
+letter-spacing:0.8px;margin-bottom:14px;border:1px solid rgba(204,0,0,0.12);text-transform:uppercase
+}
+.section-title{font-size:2.8rem;font-weight:800;margin-bottom:14px;line-height:1.15;letter-spacing:-0.5px}
+.section-sub{font-size:1.05rem;color:var(--textdim);max-width:560px;margin-bottom:48px;line-height:1.7}
+
+.hero{
+min-height:100vh;display:flex;align-items:center;justify-content:center;
+text-align:center;padding-top:var(--navh);position:relative;overflow:hidden
+}
+.hero-bg-glow{
+position:absolute;width:700px;height:700px;border-radius:50%;
+background:radial-gradient(circle,rgba(204,0,0,0.07),transparent 70%);
+top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;
+animation:heroPulse 7s ease-in-out infinite
+}
+@keyframes heroPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.5}50%{transform:translate(-50%,-50%) scale(1.5);opacity:1}}
+.hero-content{position:relative;z-index:2;max-width:820px}
+.hero-logo{
+font-size:5rem;font-weight:900;
+background:linear-gradient(135deg,var(--primary),var(--secondary),var(--tertiary));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+margin-bottom:6px;letter-spacing:-2px;line-height:1.05
+}
+.hero-logo-sub{font-size:1.05rem;color:var(--textdim);margin-bottom:20px;font-weight:400;letter-spacing:2px;text-transform:uppercase}
+.hero-desc{font-size:1.15rem;color:var(--textdim);max-width:580px;margin:0 auto 32px;line-height:1.8}
+.hero-badges{display:flex;justify-content:center;gap:10px;margin-bottom:32px;flex-wrap:wrap}
+.badge{
+display:flex;align-items:center;gap:7px;
+padding:9px 18px;border-radius:100px;
+background:var(--glass);border:1px solid var(--glassborder);
+backdrop-filter:blur(12px);font-size:0.82rem;font-weight:500;
+transition:var(--transition);color:var(--text)
+}
+.badge i{color:var(--secondary);font-size:0.85rem}
+.badge:hover{transform:translateY(-2px);background:var(--surface2);border-color:var(--primarydim)}
+.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn{
+display:inline-flex;align-items:center;gap:10px;padding:13px 30px;
+border-radius:var(--radius-xs);font-family:inherit;font-size:0.92rem;font-weight:600;
+text-decoration:none;cursor:pointer;border:none;transition:var(--transition);
+position:relative;overflow:hidden
+}
+.btn-primary{
+background:linear-gradient(135deg,var(--primary),#990000);
+color:#fff;box-shadow:0 4px 24px var(--primaryglow)
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 40px var(--primaryglow)}
+.btn-glass{
+background:var(--glass);color:var(--text);border:1px solid var(--glassborder);
+backdrop-filter:blur(12px)
+}
+.btn-glass:hover{background:var(--surface2);border-color:var(--primarydim);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.btn i{font-size:0.88rem}
+
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.feature-card{
+background:var(--glass);border:1px solid var(--glassborder);
+backdrop-filter:blur(16px);border-radius:var(--radius);
+padding:26px 22px;transition:var(--transition);position:relative;
+overflow:hidden;cursor:default
+}
+.feature-card::before{
+content:'';position:absolute;inset:0;border-radius:var(--radius);
+background:linear-gradient(135deg,var(--primarydim),transparent 60%);
+opacity:0;transition:var(--transition);pointer-events:none
+}
+.feature-card:hover{transform:translateY(-5px);border-color:var(--primarydim);box-shadow:0 12px 48px rgba(204,0,0,0.06)}
+.feature-card:hover::before{opacity:1}
+.feature-icon{
+width:44px;height:44px;border-radius:10px;
+background:var(--primarydim);color:var(--secondary);
+display:flex;align-items:center;justify-content:center;
+font-size:1.1rem;margin-bottom:16px;transition:var(--transition)
+}
+.feature-card:hover .feature-icon{background:var(--primary);color:#fff;box-shadow:0 0 20px var(--primaryglow)}
+.feature-card h3{font-size:0.95rem;font-weight:700;margin-bottom:6px}
+.feature-card p{font-size:0.82rem;color:var(--textdim);line-height:1.6}
+.feature-value{
+display:inline-block;margin-top:10px;padding:3px 12px;
+border-radius:100px;background:var(--primarydim);color:var(--secondary);
+font-size:0.75rem;font-weight:600
+}
+
+.counters-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px}
+.counter-card{
+background:var(--glass);border:1px solid var(--glassborder);
+border-radius:var(--radius);padding:44px 20px;text-align:center;
+backdrop-filter:blur(12px);transition:var(--transition)
+}
+.counter-card:hover{transform:translateY(-4px);border-color:var(--primarydim)}
+.counter-num{font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:4px}
+.counter-label{font-size:0.88rem;color:var(--textdim);margin-top:4px;font-weight:500}
+.counter-icon{font-size:1.5rem;color:var(--primarydim);margin-bottom:10px}
+
+.download-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.download-card{
+background:var(--glass);border:1px solid var(--glassborder);
+backdrop-filter:blur(16px);border-radius:var(--radius);padding:36px;
+text-align:center;transition:var(--transition)
+}
+.download-card:hover{transform:translateY(-5px);border-color:var(--primarydim);box-shadow:0 12px 48px rgba(204,0,0,0.05)}
+.download-card .big-icon{font-size:2.8rem;color:var(--primary);margin-bottom:14px}
+.download-card h3{font-size:1.25rem;font-weight:700;margin-bottom:6px}
+.download-card p{color:var(--textdim);font-size:0.88rem;margin-bottom:22px;line-height:1.7}
+.download-meta{display:flex;justify-content:center;gap:24px;margin-top:18px;flex-wrap:wrap;color:var(--textmuted);font-size:0.82rem}
+.download-meta span{display:flex;align-items:center;gap:6px}
+.download-info{background:var(--surface);border-radius:var(--radius-sm);padding:18px;margin-top:14px;font-size:0.82rem;color:var(--textdim);line-height:1.8;text-align:left}
+
+.tutorial-steps{counter-reset:step;display:grid;gap:14px;margin-bottom:0}
+.tutorial-step{
+background:var(--glass);border:1px solid var(--glassborder);
+backdrop-filter:blur(12px);border-radius:var(--radius);padding:22px 26px;
+display:flex;gap:18px;align-items:flex-start;transition:var(--transition);
+counter-increment:step
+}
+.tutorial-step:hover{transform:translateX(6px);border-color:var(--primarydim)}
+.tutorial-step .step-num{
+flex-shrink:0;width:36px;height:36px;border-radius:50%;
+background:var(--primarydim);color:var(--secondary);
+display:flex;align-items:center;justify-content:center;
+font-weight:800;font-size:0.9rem
+}
+.tutorial-step .step-content h4{font-size:0.95rem;font-weight:600;margin-bottom:3px}
+.tutorial-step .step-content p{font-size:0.85rem;color:var(--textdim);line-height:1.6}
+.tutorial-step .step-content code{
+background:var(--surface);padding:2px 8px;border-radius:4px;
+font-size:0.8rem;color:var(--tertiary);font-family:inherit
+}
+
+.security-grid{display:grid;grid-template-columns:1fr;gap:24px;max-width:800px;margin:0 auto}
+.security-card{
+background:var(--glass);border:1px solid var(--glassborder);
+backdrop-filter:blur(16px);border-radius:var(--radius);padding:36px;transition:var(--transition);text-align:center
+}
+.security-card:hover{transform:translateY(-4px);border-color:var(--primarydim)}
+.security-card h3{font-size:1.15rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:10px}
+.security-card h3 i{color:var(--primary)}
+.security-img-wrap{
+width:100%;max-width:600px;margin:0 auto;border-radius:var(--radius-sm);
+overflow:hidden;border:1px solid var(--glassborder);transition:var(--transition)
+}
+.security-img-wrap:hover{border-color:var(--primarydim)}
+.security-img-wrap img{width:100%;height:auto;display:block}
+.security-link{
+display:inline-flex;align-items:center;gap:8px;margin-top:18px;
+padding:10px 22px;border-radius:var(--radius-xs);
+background:var(--primarydim);color:var(--secondary);text-decoration:none;
+font-size:0.85rem;font-weight:600;transition:var(--transition);border:1px solid rgba(204,0,0,0.12)
+}
+.security-link:hover{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 0 20px var(--primaryglow);transform:translateY(-2px)}
+.security-stats{
+display:flex;justify-content:center;gap:30px;margin:18px 0;flex-wrap:wrap
+}
+.security-stat{text-align:center}
+.security-stat .num{font-size:2rem;font-weight:900;color:var(--secondary)}
+.security-stat .lbl{font-size:0.78rem;color:var(--textdim);margin-top:2px}
+
+.stats-section{
+display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px
+}
+.stat-card{
+background:var(--glass);border:1px solid var(--glassborder);
+border-radius:var(--radius);padding:36px 24px;text-align:center;
+backdrop-filter:blur(12px);transition:var(--transition)
+}
+.stat-card:hover{transform:translateY(-5px);border-color:var(--primarydim)}
+.stat-card .stat-icon{font-size:2rem;color:var(--primary);margin-bottom:12px}
+.stat-card .stat-num{font-size:2.2rem;font-weight:900;color:var(--text);margin-bottom:4px}
+.stat-card .stat-label{font-size:0.82rem;color:var(--textdim)}
+
+.changelog-list,.roadmap-list,.version-list{display:grid;gap:10px}
+.changelog-item,.roadmap-item,.version-item{
+background:var(--glass);border:1px solid var(--glassborder);
+backdrop-filter:blur(12px);border-radius:var(--radius-sm);padding:18px 22px;
+transition:var(--transition);display:flex;gap:14px;align-items:flex-start
+}
+.changelog-item:hover,.roadmap-item:hover,.version-item:hover{border-color:var(--primarydim);transform:translateX(4px)}
+.changelog-ver{flex-shrink:0;padding:3px 10px;border-radius:100px;background:var(--primarydim);color:var(--secondary);font-size:0.75rem;font-weight:700}
+.changelog-date{flex-shrink:0;font-size:0.75rem;color:var(--textmuted);min-width:75px}
+.changelog-text{font-size:0.85rem;color:var(--textdim);line-height:1.6}
+.changelog-text i{color:var(--secondary);margin-right:5px}
+.roadmap-status{flex-shrink:0;padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:600}
+.roadmap-status.done{background:rgba(0,200,83,0.12);color:#00c853}
+.roadmap-status.progress{background:rgba(204,0,0,0.12);color:var(--secondary)}
+.roadmap-status.planned{background:rgba(255,171,0,0.12);color:#ffab00}
+
+.faq-grid{display:grid;gap:10px}
+.faq-item{
+background:var(--glass);border:1px solid var(--glassborder);
+backdrop-filter:blur(12px);border-radius:var(--radius-sm);overflow:hidden;
+transition:var(--transition);cursor:pointer
+}
+.faq-item:hover{border-color:var(--primarydim)}
+.faq-q{
+padding:18px 22px;display:flex;justify-content:space-between;align-items:center;
+font-weight:600;font-size:0.92rem;user-select:none
+}
+.faq-q i{color:var(--textmuted);transition:var(--transition);font-size:0.78rem}
+.faq-item.open .faq-q i{transform:rotate(180deg);color:var(--primary)}
+.faq-a{
+max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.4s ease;
+padding:0 22px;font-size:0.85rem;color:var(--textdim);line-height:1.7
+}
+.faq-item.open .faq-a{max-height:300px;padding:0 22px 18px}
+
+footer{
+border-top:1px solid var(--glassborder);padding:48px 24px 24px;
+background:rgba(0,0,0,0.3);position:relative;z-index:1
+}
+.footer-inner{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+.footer-brand .nav-logo{font-size:1.15rem;margin-bottom:10px}
+.footer-brand p{font-size:0.82rem;color:var(--textdim);line-height:1.7;max-width:300px}
+.footer-col h4{font-size:0.85rem;font-weight:700;margin-bottom:14px}
+.footer-col a{display:block;font-size:0.82rem;color:var(--textdim);text-decoration:none;padding:3px 0;transition:var(--transition)}
+.footer-col a:hover{color:var(--primary);padding-left:4px}
+.footer-bottom{max-width:var(--maxw);margin:28px auto 0;padding-top:18px;border-top:1px solid var(--glassborder);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:0.8rem;color:var(--textmuted)}
+.footer-socials{display:flex;gap:10px}
+.footer-socials a{
+width:34px;height:34px;border-radius:50%;background:var(--surface);
+display:flex;align-items:center;justify-content:center;color:var(--textdim);
+text-decoration:none;transition:var(--transition);font-size:0.85rem
+}
+.footer-socials a:hover{background:var(--primary);color:#fff;transform:translateY(-3px)}
+
+#back-to-top{
+position:fixed;bottom:30px;right:30px;z-index:999;
+width:44px;height:44px;border-radius:50%;
+background:linear-gradient(135deg,var(--primary),#990000);
+color:#fff;border:none;font-size:1rem;cursor:pointer;
+box-shadow:0 4px 24px var(--primaryglow);
+opacity:0;visibility:hidden;transform:translateY(20px);
+transition:var(--transition)
+}
+#back-to-top.visible{opacity:1;visibility:visible;transform:translateY(0)}
+#back-to-top:hover{transform:translateY(-4px);box-shadow:0 8px 40px var(--primaryglow)}
+
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--glassborder),transparent);margin:60px 0}
+
+@media(max-width:968px){
+.download-cards{grid-template-columns:1fr}
+.footer-inner{grid-template-columns:1fr 1fr;gap:32px}
+.section-title{font-size:2.2rem}
+.hero-logo{font-size:3.5rem}
+.counters-grid{grid-template-columns:repeat(2,1fr)}
+.stats-section{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+.nav-links{position:fixed;top:var(--navh);left:0;right:0;background:rgba(7,7,7,0.97);backdrop-filter:blur(24px);flex-direction:column;padding:16px 24px;border-bottom:1px solid var(--glassborder);display:none;gap:4px}
+.nav-links.open{display:flex}
+.nav-links a{width:100%;padding:11px 16px}
+.nav-btn{text-align:center}
+.menu-toggle{display:block}
+.hero-logo{font-size:2.6rem}
+.section-title{font-size:1.8rem}
+section{padding:64px 16px}
+.features-grid{grid-template-columns:1fr 1fr}
+.counters-grid{grid-template-columns:1fr 1fr}
+.footer-inner{grid-template-columns:1fr;gap:24px}
+.stats-section{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+.features-grid{grid-template-columns:1fr}
+.counters-grid{grid-template-columns:1fr 1fr}
+.hero-badges{flex-direction:column;align-items:center}
+.hero-actions{flex-direction:column;align-items:center}
+.btn{width:100%;justify-content:center}
+.stats-section{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
-    <!-- PARTICLES CANVAS -->
-    <canvas id="particles-canvas"></canvas>
 
-    <!-- GLOW ORB -->
-    <div id="glow-orb"></div>
+<div id="loading-screen">
+<div class="loading-logo">Loading...</div>
+<div class="loading-bar-wrap"><div class="loading-bar-fill"></div></div>
+</div>
 
-    <!-- SITE WRAPPER -->
-    <div class="site-wrapper">
+<canvas id="particles-canvas"></canvas>
 
-        <!-- ===== NAVBAR ===== -->
-        <nav class="navbar" id="navbar">
-            <div class="logo">
-                <div class="logo-icon">⚓</div>
-                <span>Anchorism's Executor</span>
-            </div>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#games">Games</a></li>
-                <li><a href="#dashboard">Dashboard</a></li>
-                <li><a href="#faq">FAQ</a></li>
-                <li><a href="#download" class="nav-cta">Download</a></li>
-            </ul>
-            <div class="hamburger" id="hamburger" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </div>
-        </nav>
+<nav id="navbar">
+<div class="nav-inner">
+<a href="#home" class="nav-logo"><i class="fas fa-feather"></i>Anchorism</a>
+<ul class="nav-links" id="nav-links">
+<a href="#home">Home</a>
+<a href="#features">Features</a>
+<a href="#download">Download</a>
+<a href="#tutorial">Tutorial</a>
+<a href="#security">Security</a>
+<a href="#changelog">Updates</a>
+<a href="#faq">FAQ</a>
+<a href="#download" class="nav-btn"><i class="fas fa-download"></i>Download</a>
+</ul>
+<button class="menu-toggle" id="menu-toggle" aria-label="Menu"><i class="fas fa-bars"></i></button>
+</div>
+</nav>
 
-        <!-- ===== HERO ===== -->
-        <section class="hero" id="hero">
-            <div class="hero-content">
-                <div class="hero-badge">✦ v2.4.1 — Undetected</div>
-                <h1>
-                    The Next Gen<br>
-                    <span class="highlight">Roblox Executor</span>
-                </h1>
-                <p>
-                    Develop, test, and debug your Roblox scripts with the most powerful
-                    and discreet executor. Built for creators, developers, and enthusiasts.
-                </p>
-                <div class="hero-buttons">
-                    <a href="#download" class="btn-primary">
-                        ⬇ Download Now
-                    </a>
-                    <a href="#features" class="btn-secondary">
-                        Learn More →
-                    </a>
-                </div>
-                <div class="hero-stats">
-                    <div class="hero-stat">
-                        <div class="number">251K+</div>
-                        <div class="label">Downloads</div>
-                    </div>
-                    <div class="hero-stat">
-                        <div class="number">4.1★</div>
-                        <div class="label">Rating</div>
-                    </div>
-                    <div class="hero-stat">
-                        <div class="number">97.8%</div>
-                        <div class="label">Uptime</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== FEATURES ===== -->
-        <section id="features">
-            <h2 class="section-title reveal">⚡ Exec Features</h2>
-            <p class="section-sub reveal">
-                Advanced tools for Roblox development and debugging.
-                Allowed automation, powerful scripting, and full control.
-            </p>
-            <div class="features-grid">
-                <div class="feature-card reveal">
-                    <div class="feature-icon">🧠</div>
-                    <h3>Script Execution</h3>
-                    <p>Run Lua/U scripts with optimized performance. Support for complex snippets and custom libraries.</p>
-                </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon">🔍</div>
-                    <h3>Built-in Debugger</h3>
-                    <p>Step-through debugging, breakpoints, and real-time variable inspection. Perfect for learning and fixing code.</p>
-                </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon">📦</div>
-                    <h3>Script Hub</h3>
-                    <p>Built-in library of ready-to-use scripts for testing, automation, and learning. Updated weekly.</p>
-                </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon">🛡️</div>
-                    <h3>Anti-Detect Engine</h3>
-                    <p>Multi-layer bypass system to stay undetected. Automatic updates to stay ahead of patches.</p>
-                </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Low-Level API</h3>
-                    <p>Access to native Roblox functions for advanced automation, remote spy, and security testing.</p>
-                </div>
-                <div class="feature-card reveal">
-                    <div class="feature-icon">🌐</div>
-                    <h3>Multi-Instance</h3>
-                    <p>Launch and manage multiple Roblox instances simultaneously for cross-session and stress testing.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SUPPORTED GAMES ===== -->
-        <section id="games">
-            <h2 class="section-title reveal">🎮 Supported Games</h2>
-            <p class="section-sub reveal">
-                Compatible with hundreds of Roblox experiences. Here are some popular titles
-                verified for development and testing.
-            </p>
-            <div class="games-grid">
-                <div class="game-card reveal">
-                    <div class="game-thumb">🏠</div>
-                    <h4>Brookhaven RP</h4>
-                    <p>Roleplay • 80B+ visits</p>
-                    <span class="game-badge">✓ Verified</span>
-                </div>
-                <div class="game-card reveal">
-                    <div class="game-thumb">⚔️</div>
-                    <h4>RIVALS</h4>
-                    <p>FPS • Competitive</p>
-                    <span class="game-badge">✓ Verified</span>
-                </div>
-                <div class="game-card reveal">
-                    <div class="game-thumb">💰</div>
-                    <h4>Steal a Brainrot</h4>
-                    <p>Fun • Competitive</p>
-                    <span class="game-badge">✓ Verified</span>
-                </div>
-                <div class="game-card reveal">
-                    <div class="game-thumb">🥕</div>
-                    <h4>Grow a Garden 1/2</h4>
-                    <p>Simulator • Survival</p>
-                    <span class="game-badge">✓ Verified</span>
-                </div>
-                <div class="game-card reveal">
-                    <div class="game-thumb">🚗</div>
-                    <h4>Driving Empire</h4>
-                    <p>Vehicles • Open World</p>
-                    <span class="game-badge">✓ Verified</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== DASHBOARD ===== -->
-        <section id="dashboard">
-            <div class="dashboard reveal">
-                <h2 class="section-title" style="margin-bottom:4px;">📊 Live Dashboard</h2>
-                <p class="section-sub" style="margin-bottom:20px;">
-                    Real-time statistics from the Anchorism community.
-                </p>
-                <div class="dashboard-grid">
-                    <div class="dash-item">
-                        <div class="dash-number" data-count="251291">0</div>
-                        <div class="dash-label">Total Downloads</div>
-                    </div>
-                    <div class="dash-item">
-                        <div class="dash-number" data-count="38921">0</div>
-                        <div class="dash-label">Active Users</div>
-                    </div>
-                    <div class="dash-item">
-                        <div class="dash-number" data-count="17452">0</div>
-                        <div class="dash-label">Scripts Uploaded</div>
-                    </div>
-                    <div class="dash-item">
-                        <div class="dash-number" data-count="97.9">0</div>
-                        <div class="dash-label">Uptime %</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== FAQ ===== -->
-        <section id="faq">
-            <h2 class="section-title reveal">❓ FAQ</h2>
-            <p class="section-sub reveal">
-                Answers to the most common questions about Anchorism's Executor.
-            </p>
-            <div class="faq-list">
-                <div class="faq-item reveal">
-                    <button class="faq-question">
-                        What is Anchorism's Executor?
-                        <span class="faq-arrow">▾</span>
-                    </button>
-                    <div class="faq-answer">
-                        Anchorism is a Roblox script executor designed for developers, creators, and enthusiasts who want to test Lua/U scripts, debug code, and automate allowed processes within their own experiences.
-                    </div>
-                </div>
-                <div class="faq-item reveal">
-                    <button class="faq-question">
-                        Is it safe and undetected?
-                        <span class="faq-arrow">▾</span>
-                    </button>
-                    <div class="faq-answer">
-                        Yes. Anchorism uses a multi-layer anti-detect system with automatic updates. We maintain compatibility with the latest Roblox versions and release timely patches to stay undetected.
-                    </div>
-                </div>
-                <div class="faq-item reveal">
-                    <button class="faq-question">
-                        How do I install the executor?
-                        <span class="faq-arrow">▾</span>
-                    </button>
-                    <div class="faq-answer">
-                        Download the .zip file from the Download section, extract the folder, run "2OPEN.bat" as administrator, and follow the setup wizard by opening "OPEN1.txt". Enable "Auto-Inject" for a seamless experience.
-                    </div>
-                </div>
-                <div class="faq-item reveal">
-                    <button class="faq-question">
-                        Is using an executor legal?
-                        <span class="faq-arrow">▾</span>
-                    </button>
-                    <div class="faq-answer">
-                        Anchorism is a tool for educational and development purposes. It is intended for creators who want to test scripts, debug, and automate within their own experiences. We recommend using it only in testing environments.
-                    </div>
-                </div>
-                <div class="faq-item reveal">
-                    <button class="faq-question">
-                        How often do you update?
-                        <span class="faq-arrow">▾</span>
-                    </button>
-                    <div class="faq-answer">
-                        Absolutely. We release weekly updates to ensure maximum compatibility and security. The dashboard will automatically notify you when a new version is available.
-                    </div>
-                </div>
-            </div>
-        </section>
-
-      <!-- ===== DOWNLOAD ===== -->
-<section id="download">
-    <div class="download-box reveal">
-        <div class="version">⚓ v2.4.1 • Latest</div>
-        <h2>⬇ Download Anchorism's exec</h2>
-        <p>
-            Get the latest version of the executor. Ready-to-use .zip file.
-            Compatible with Windows 10/11.
-            If chrome blocks the download try pressing Ctrl + J and
-            download it again, if it doesn't work try allowing in 
-            Windows Defender
-        </p>
-        
-        <!-- LINK MODIFICATO CON URL 'RAW' PER IL DOWNLOAD AUTOMATICO -->
-        <a href="https://github.com/cricetofluffoso/Websit/raw/main/XAnchorismExec.zip" download style="text-decoration: none;">
-            <button class="download-btn" id="downloadBtn">
-                ⬇ Download Now (ZIP)
-            </button>
-        </a>
-
-        <div class="upload-progress" id="uploadProgress">
-            <div class="progress-bar-bg">
-                <div class="progress-bar-fill" id="progressFill"></div>
-            </div>
-            <div class="upload-status" id="uploadStatus">Preparing download...</div>
-        </div>
-        <div class="download-meta">
-            <span>📦 2.7 MB</span>
-            <span>🔒 Scan: ✓ Safe</span>
-            <span>🔄 Updated: Jun 22, 2026</span>
-        </div>
-    </div>
+<section class="hero" id="home">
+<div class="hero-bg-glow"></div>
+<div class="hero-content reveal">
+<div class="hero-logo">Anchorism's<br>Executor</div>
+<div class="hero-logo-sub">The Next Generation Execution Engine</div>
+<p class="hero-desc">Experience unparalleled power, stability, and speed. Anchorism's Executor delivers the most advanced script execution platform with cutting-edge injection technology and a sleek, modern interface.</p>
+<div class="hero-badges">
+<div class="badge"><i class="fas fa-file-archive"></i>7z Archive</div>
+<div class="badge"><i class="fas fa-database"></i>13.8 MB</div>
+<div class="badge"><i class="fab fa-windows"></i>Windows 10/11</div>
+</div>
+<div class="hero-actions">
+<a href="#download" class="btn btn-primary"><i class="fas fa-download"></i>Download Now</a>
+<a href="#features" class="btn btn-glass"><i class="fas fa-info-circle"></i>Learn More</a>
+</div>
+</div>
 </section>
 
-        <!-- ===== FOOTER ===== -->
-        <footer>
-            <p>© 2026 <a href="#">Anchorism's Executor</a> — for educational & development purposes only.</p>
-        </footer>
+<section id="features">
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-bolt"></i> Features</div>
+<h2 class="section-title reveal">Built for Performance</h2>
+<p class="section-sub reveal">Every component of Anchorism's Executor is engineered for speed, reliability, and a seamless user experience.</p>
+<div class="features-grid reveal">
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-tachometer-alt"></i></div><h3>UNC Rating</h3><p>Industry-leading UNC rating for maximum script compatibility across the broadest range of Roblox scripts.</p><span class="feature-value">98.4%</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-rocket"></i></div><h3>Execution Speed</h3><p>Lightning-fast execution engine with optimized bytecode processing and minimal latency for instant script results.</p><span class="feature-value">0.02ms</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-shield-alt"></i></div><h3>Stability</h3><p>Rock-solid stability with advanced crash handling and memory management for uninterrupted sessions.</p><span class="feature-value">99.7%</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-code"></i></div><h3>Script Compatibility</h3><p>Broad compatibility with thousands of scripts including all major script hubs and community libraries.</p><span class="feature-value">95%+</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-plug"></i></div><h3>Auto Attach</h3><p>Seamless auto-attach functionality that detects Roblox processes and injects automatically with zero configuration.</p><span class="feature-value">Supported</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-syringe"></i></div><h3>Fast Injection</h3><p>Optimized injection pipeline delivering sub-second attach times with minimal overhead and no bloat.</p><span class="feature-value">&lt;0.5s</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-edit"></i></div><h3>Built-in Script Editor</h3><p>Feature-rich script editor with syntax highlighting, auto-complete, line numbers, and dark theme support.</p><span class="feature-value">Included</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-folder-open"></i></div><h3>Script Hub</h3><p>Integrated script hub with curated collections, categories, and one-click execution for popular scripts.</p><span class="feature-value">Included</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-layer-group"></i></div><h3>Multi Tab</h3><p>Multi-tab interface allowing simultaneous script editing, testing, and execution across multiple sessions.</p><span class="feature-value">Unlimited</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-sync-alt"></i></div><h3>Auto Update</h3><p>Automatic background updates ensure you always have the latest features, fixes, and Roblox compatibility patches.</p><span class="feature-value">Enabled</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-microchip"></i></div><h3>Low Resource Usage</h3><p>Efficient memory and CPU management with a lightweight footprint that won't slow down your system.</p><span class="feature-value">&lt;40MB RAM</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-life-ring"></i></div><h3>Crash Protection</h3><p>Advanced crash protection system prevents unexpected closures and safeguards your scripts and progress.</p><span class="feature-value">Active</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-clock"></i></div><h3>Frequent Updates</h3><p>Regular update cadence with weekly patches, bi-weekly features, and rapid hotfixes for critical issues.</p><span class="feature-value">Weekly</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-paint-brush"></i></div><h3>Clean UI</h3><p>Modern, minimalist interface designed with clarity and ease of use in mind — no clutter, just tools.</p><span class="feature-value">Minimal</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-dharmachakra"></i></div><h3>DLL Injection</h3><p>Refined DLL injection methodology for reliable, clean, and undetected process attachment every time.</p><span class="feature-value">Stealth</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-check-circle"></i></div><h3>High Success Rate</h3><p>Industry-leading injection and execution success rate backed by rigorous testing and quality assurance.</p><span class="feature-value">99.2%</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-code-branch"></i></div><h3>API Version</h3><p>Current API version with full endpoint coverage and comprehensive developer documentation.</p><span class="feature-value">v3.2.1</span></div>
+<div class="feature-card"><div class="feature-icon"><i class="fas fa-tag"></i></div><h3>Current Version</h3><p>Latest stable release with all features, fixes, and optimizations included and ready to use.</p><span class="feature-value">v2.7.4</span></div>
+</div>
+<div class="counters-grid reveal">
+<div class="counter-card"><div class="counter-icon"><i class="fas fa-download"></i></div><div class="counter-num"><span class="count" data-target="84500">0</span>+</div><div class="counter-label">Downloads</div></div>
+<div class="counter-card"><div class="counter-icon"><i class="fas fa-code-branch"></i></div><div class="counter-num"><span class="count" data-target="147">0</span></div><div class="counter-label">Updates</div></div>
+<div class="counter-card"><div class="counter-icon"><i class="fas fa-users"></i></div><div class="counter-num"><span class="count" data-target="12000">0</span>+</div><div class="counter-label">Active Users</div></div>
+<div class="counter-card"><div class="counter-icon"><i class="fas fa-star"></i></div><div class="counter-num"><span class="count" data-target="4">0</span></div><div class="counter-label">Rating <span style="font-size:0.7rem;color:var(--textmuted)">/ 5.0</span></div></div>
+</div>
+</div>
+</section>
 
-    </div>
+<section id="download">
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-download"></i> Download</div>
+<h2 class="section-title reveal">Get Anchorism's Executor</h2>
+<p class="section-sub reveal">Download the latest version and start executing scripts in seconds. Lightweight, fast, and ready to go.</p>
+<div class="download-cards reveal">
+<div class="download-card">
+<div class="big-icon"><i class="fas fa-file-archive"></i></div>
+<h3>Direct Download</h3>
+<p>Download the portable 7z archive — no installer required. Extract and run.</p>
+<a href="https://limewire.com/d/8fALJ#C614eyB6X7" download="RobloxExec.7z" class="btn btn-primary" id="download-link"><i class="fas fa-download"></i> Download .7z</a>
+<div class="download-meta">
+<span><i class="fas fa-file-archive"></i> 7z</span>
+<span><i class="fas fa-database"></i> 13.8 MB</span>
+<span><i class="fab fa-windows"></i> Windows 10/11</span>
+</div>
+</div>
+<div class="download-card">
+<div class="big-icon"><i class="fas fa-info-circle"></i></div>
+<h3>Download Information</h3>
+<p>The download is a password-protected 7z archive containing the full executable and required dependencies.</p>
+<div class="download-info">
+<i class="fas fa-key" style="color:var(--primary);margin-right:8px"></i> Password required — contact your inviter for access.<br>
+<i class="fas fa-shield-alt" style="color:var(--primary);margin-right:8px"></i> Scanned with VirusTotal — 0/68 detections.<br>
+<i class="fas fa-hashtag" style="color:var(--primary);margin-right:8px"></i> SHA-256: <code style="color:var(--textmuted);font-size:0.78rem">8e1c94d102c6eb40b212d0eddc5ceab6cf437366696d86c5111e1881eedd2fc7</code>
+</div>
+<div class="download-meta" style="margin-top:14px">
+<span><i class="fas fa-calendar-alt"></i> Updated: June 2026</span>
+</div>
+</div>
+</div>
+</div>
+</section>
 
-    <script>
-        // ===== PARTICLES (Canvas) =====
-        (function() {
-            const canvas = document.getElementById('particles-canvas');
-            const ctx = canvas.getContext('2d');
-            let particles = [];
-            let mouseX = 0, mouseY = 0;
+<section id="tutorial">
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-book"></i> Tutorial</div>
+<h2 class="section-title reveal">Quick Start Guide</h2>
+<p class="section-sub reveal">Follow these steps to get up and running with Anchorism's Executor in minutes.</p>
+<div class="tutorial-steps reveal">
+<div class="tutorial-step"><div class="step-num">1</div><div class="step-content"><h4>Download the Archive</h4><p>Click the Download button above to get <code>RobloxExec.7z</code> — a password-protected archive containing the full executor package.</p></div></div>
+<div class="tutorial-step"><div class="step-num">2</div><div class="step-content"><h4>Install WinRAR or 7-Zip</h4><p>If you don't have an archive tool, download <strong>WinRAR</strong> or <strong>7-Zip</strong> from their official websites to handle the .7z file format.</p></div></div>
+<div class="tutorial-step"><div class="step-num">3</div><div class="step-content"><h4>Open the Archive</h4><p>Right-click <code>RobloxExec.7z</code> and select <strong>"Open with WinRAR"</strong> or <strong>"7-Zip &gt; Open archive"</strong>.</p></div></div>
+<div class="tutorial-step"><div class="step-num">4</div><div class="step-content"><h4>Extract the Files</h4><p>Click <strong>"Extract To"</strong> and choose a destination folder. When prompted, enter the password provided by your inviter.</p></div></div>
+<div class="tutorial-step"><div class="step-num">5</div><div class="step-content"><h4>Launch &amp; Enjoy</h4><p>Open the extracted folder and run <code>AnchorismExecutor.exe</code>. Launch Roblox, and the executor will auto-attach. You're ready to go.</p></div></div>
+</div>
+</div>
+</section>
 
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-            window.addEventListener('resize', resize);
-            resize();
+<section id="security">
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-shield-alt"></i> Security</div>
+<h2 class="section-title reveal">VirusTotal Analysis</h2>
+<p class="section-sub reveal">Anchorism's Executor has been scanned against 68 antivirus engines. Below is the full analysis report.</p>
+<div class="security-grid reveal">
+<div class="security-card">
+<h3><i class="fas fa-virus"></i> VirusTotal Report</h3>
+<div class="security-stats">
+<div class="security-stat"><div class="num">0</div><div class="lbl">Malicious</div></div>
+<div class="security-stat"><div class="num">68</div><div class="lbl">Engines</div></div>
+<div class="security-stat"><div class="num" style="color:#00c853">Clean</div><div class="lbl">Status</div></div>
+</div>
+<div class="security-img-wrap">
+<a href="https://imgur.com/a/G34rxGZ" target="_blank">
+<img src="https://i.imgur.com/IdJ7b8L_d.webp?maxwidth=760&fidelity=grand" alt="VirusTotal scan results showing 0/68 detections">
+</a>
+</div>
+<a href="https://www.virustotal.com/gui/file/8e1c94d102c6eb40b212d0eddc5ceab6cf437366696d86c5111e1881eedd2fc7" target="_blank" class="security-link"><i class="fas fa-external-link-alt"></i> View Full VirusTotal Report</a>
+</div>
+</div>
+</div>
+</section>
 
-            const COUNT = 100;
+<section id="stats">
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-chart-line"></i> Statistics</div>
+<h2 class="section-title reveal">By the Numbers</h2>
+<p class="section-sub reveal">Anchorism's Executor is trusted by thousands of users worldwide. Here are the metrics that matter.</p>
+<div class="stats-section reveal">
+<div class="stat-card"><div class="stat-icon"><i class="fas fa-download"></i></div><div class="stat-num"><span class="count" data-target="84500">0</span>+</div><div class="stat-label">Total Downloads</div></div>
+<div class="stat-card"><div class="stat-icon"><i class="fas fa-code-branch"></i></div><div class="stat-num"><span class="count" data-target="147">0</span></div><div class="stat-label">Version Releases</div></div>
+<div class="stat-card"><div class="stat-icon"><i class="fas fa-globe"></i></div><div class="stat-num"><span class="count" data-target="86">0</span></div><div class="stat-label">Countries Reached</div></div>
+</div>
+</div>
+</section>
 
-            class Particle {
-                constructor() {
-                    this.reset();
-                }
-                reset() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = Math.random() * canvas.height;
-                    this.size = Math.random() * 2 + 0.5;
-                    this.speedX = (Math.random() - 0.5) * 0.4;
-                    this.speedY = (Math.random() - 0.5) * 0.4;
-                    this.opacity = Math.random() * 0.5 + 0.1;
-                }
-                update() {
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-                }
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(0, 136, 255, ${this.opacity})`;
-                    ctx.fill();
-                }
-            }
+<section id="changelog">
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-clock"></i> Changelog</div>
+<h2 class="section-title reveal">Release Notes</h2>
+<p class="section-sub reveal">Track every update, improvement, and fix in Anchorism's Executor.</p>
+<div class="changelog-list reveal">
+<div class="changelog-item"><span class="changelog-ver">v2.7.4</span><span class="changelog-date">Jun 22, 2026</span><div class="changelog-text"><i class="fas fa-check"></i> Fixed injection timeout on latest Roblox update<br><i class="fas fa-check"></i> Improved script hub responsiveness</div></div>
+<div class="changelog-item"><span class="changelog-ver">v2.7.3</span><span class="changelog-date">Jun 15, 2026</span><div class="changelog-text"><i class="fas fa-check"></i> Added new UNC APIs — rating improved to 98.4%<br><i class="fas fa-check"></i> Optimized memory usage by 22%</div></div>
+<div class="changelog-item"><span class="changelog-ver">v2.7.2</span><span class="changelog-date">Jun 08, 2026</span><div class="changelog-text"><i class="fas fa-check"></i> Fixed rare crash on script execution<br><i class="fas fa-check"></i> Updated built-in script library</div></div>
+<div class="changelog-item"><span class="changelog-ver">v2.7.1</span><span class="changelog-date">Jun 01, 2026</span><div class="changelog-text"><i class="fas fa-check"></i> Stability improvements for Windows 11 24H2<br><i class="fas fa-check"></i> Minor UI refinements</div></div>
+<div class="changelog-item"><span class="changelog-ver">v2.7.0</span><span class="changelog-date">May 25, 2026</span><div class="changelog-text"><i class="fas fa-star"></i> Major update: New multi-tab system<br><i class="fas fa-star"></i> Redesigned script editor with syntax highlighting</div></div>
+</div>
+</div>
+</section>
 
-            for (let i = 0; i < COUNT; i++) {
-                particles.push(new Particle());
-            }
+<section>
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-map-signs"></i> Roadmap</div>
+<h2 class="section-title reveal">What's Next</h2>
+<p class="section-sub reveal">Here's what we're working on for future releases.</p>
+<div class="roadmap-list reveal">
+<div class="roadmap-item"><span class="roadmap-status progress"><i class="fas fa-spinner"></i> In Progress</span><div class="changelog-text"><strong>Remote Spy &amp; Logging</strong> — Real-time remote event monitoring with filtering and logging capabilities.</div></div>
+<div class="roadmap-item"><span class="roadmap-status progress"><i class="fas fa-spinner"></i> In Progress</span><div class="changelog-text"><strong>Custom Theme Support</strong> — Fully customizable UI themes with a built-in theme editor and community gallery.</div></div>
+<div class="roadmap-item"><span class="roadmap-status planned"><i class="fas fa-hourglass"></i> Planned</span><div class="changelog-text"><strong>Mobile Companion</strong> — Lightweight companion app for monitoring and controlling execution remotely.</div></div>
+<div class="roadmap-item"><span class="roadmap-status planned"><i class="fas fa-hourglass"></i> Planned</span><div class="changelog-text"><strong>Plugin System</strong> — Open plugin API allowing the community to extend functionality with custom modules.</div></div>
+<div class="roadmap-item"><span class="roadmap-status planned"><i class="fas fa-hourglass"></i> Planned</span><div class="changelog-text"><strong>Cloud Sync</strong> — Sync your scripts, settings, and themes across devices with cloud storage integration.</div></div>
+</div>
+</div>
+</section>
 
-            let connectionDistance = 120;
+<section>
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-history"></i> Version History</div>
+<h2 class="section-title reveal">Past Releases</h2>
+<p class="section-sub reveal">A complete archive of every Anchorism's Executor release.</p>
+<div class="version-list reveal">
+<div class="changelog-item"><span class="changelog-ver">v2.6.0</span><span class="changelog-date">May 10, 2026</span><div class="changelog-text">Script hub overhaul, new UNC functions, bug fixes</div></div>
+<div class="changelog-item"><span class="changelog-ver">v2.5.2</span><span class="changelog-date">Apr 28, 2026</span><div class="changelog-text">Hotfix for auto-attach timing issue on latest Roblox</div></div>
+<div class="changelog-item"><span class="changelog-ver">v2.5.0</span><span class="changelog-date">Apr 15, 2026</span><div class="changelog-text">Performance improvements, crash protection v2, UI refresh</div></div>
+<div class="changelog-item"><span class="changelog-ver">v2.4.1</span><span class="changelog-date">Mar 30, 2026</span><div class="changelog-text">Stability fixes, improved DLL injection method</div></div>
+<div class="changelog-item"><span class="changelog-ver">v2.4.0</span><span class="changelog-date">Mar 15, 2026</span><div class="changelog-text">Major update: Auto-update system, new script editor, multi-tab beta</div></div>
+</div>
+</div>
+</section>
 
-            function drawConnections() {
-                for (let i = 0; i < particles.length; i++) {
-                    for (let j = i + 1; j < particles.length; j++) {
-                        const dx = particles[i].x - particles[j].x;
-                        const dy = particles[i].y - particles[j].y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < connectionDistance) {
-                            const alpha = (1 - dist / connectionDistance) * 0.25;
-                            ctx.beginPath();
-                            ctx.moveTo(particles[i].x, particles[i].y);
-                            ctx.lineTo(particles[j].x, particles[j].y);
-                            ctx.strokeStyle = `rgba(0, 136, 255, ${alpha})`;
-                            ctx.lineWidth = 0.5;
-                            ctx.stroke();
-                        }
-                    }
-                }
-            }
+<section id="faq">
+<div class="section-inner">
+<div class="section-tag"><i class="fas fa-question-circle"></i> FAQ</div>
+<h2 class="section-title reveal">Frequently Asked Questions</h2>
+<p class="section-sub reveal">Everything you need to know about Anchorism's Executor.</p>
+<div class="faq-grid reveal">
+<div class="faq-item open"><div class="faq-q">What is Anchorism's Executor? <i class="fas fa-chevron-down"></i></div><div class="faq-a">Anchorism's Executor is a high-performance Roblox script execution tool designed for stability, speed, and broad script compatibility. It features a clean modern interface, advanced injection technology, and regular updates.</div></div>
+<div class="faq-item"><div class="faq-q">Is Anchorism's Executor free? <i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes, Anchorism's Executor is completely free to download and use. There are no hidden charges, subscription fees, or premium tiers — all features are available to everyone.</div></div>
+<div class="faq-item"><div class="faq-q">Is it safe to use? <i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes. Anchorism's Executor has been scanned on VirusTotal with <strong>0 detections out of 68 engines</strong>. Check the Security section for the full report and live scan results.</div></div>
+<div class="faq-item"><div class="faq-q">Why is the archive password protected? <i class="fas fa-chevron-down"></i></div><div class="faq-a">The archive is password-protected to prevent automated analysis and tampering. Contact the person who invited you to receive the correct password.</div></div>
+<div class="faq-item"><div class="faq-q">Does it work on Windows 11? <i class="fas fa-chevron-down"></i></div><div class="faq-a">Yes, Anchorism's Executor is fully compatible with Windows 10 and Windows 11, including the latest 24H2 update. Both x64 and x86 architectures are supported.</div></div>
+<div class="faq-item"><div class="faq-q">What is UNC rating and why does it matter? <i class="fas fa-chevron-down"></i></div><div class="faq-a">UNC (Unified Naming Convention) rating measures how many Roblox API functions an executor can handle. A higher rating means better script compatibility. Anchorism's Executor boasts a 98.4% UNC rating, one of the highest available.</div></div>
+</div>
+</div>
+</section>
 
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                particles.forEach(p => {
-                    p.update();
-                    p.draw();
-                });
-                drawConnections();
-                requestAnimationFrame(animate);
-            }
+<footer>
+<div class="footer-inner">
+<div class="footer-brand">
+<a href="#home" class="nav-logo"><i class="fas fa-feather"></i>Anchorism</a>
+<p>Anchorism's Executor is the next-generation Roblox script execution platform. Built for speed, stability, and the community.</p>
+</div>
+<div class="footer-col"><h4>Product</h4><a href="#features">Features</a><a href="#download">Download</a><a href="#changelog">Changelog</a><a href="#faq">FAQ</a></div>
+<div class="footer-col"><h4>Support</h4><a href="#tutorial">Tutorial</a><a href="#faq">FAQ</a><a href="#">Contact</a><a href="#">Documentation</a></div>
+<div class="footer-col"><h4>Legal</h4><a href="#">Terms of Service</a><a href="#">Privacy Policy</a><a href="#">EULA</a><a href="#">Cookie Policy</a></div>
+</div>
+<div class="footer-bottom">
+<span>&copy; 2026 Anchorism. All rights reserved.</span>
+<div class="footer-socials">
+<a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+<a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+<a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+<a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+</div>
+</div>
+</footer>
 
-            animate();
+<button id="back-to-top" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
 
-            // mouse interaction
-            window.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                particles.forEach(p => {
-                    const dx = p.x - mouseX;
-                    const dy = p.y - mouseY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 150) {
-                        const force = (150 - dist) / 150;
-                        p.x += dx * force * 0.02;
-                        p.y += dy * force * 0.02;
-                    }
-                });
-            });
-        })();
+<script>
+document.addEventListener('DOMContentLoaded',function(){
 
-        // ===== NAVBAR SCROLL =====
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            navbar.classList.toggle('scrolled', window.scrollY > 60);
-        });
+setTimeout(function(){
+document.getElementById('loading-screen').classList.add('hidden');
+},1800);
 
-        // ===== HAMBURGER =====
-        const hamburger = document.getElementById('hamburger');
-        const navLinks = document.getElementById('navLinks');
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('open');
-        });
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('open');
-            });
-        });
+const canvas=document.getElementById('particles-canvas');
+const ctx=canvas.getContext('2d');
+let particles=[];
+let w,h;
+function resize(){
+w=canvas.width=window.innerWidth;
+h=canvas.height=window.innerHeight;
+}
+resize();
+window.addEventListener('resize',resize);
+class Particle{
+constructor(){this.reset()}
+reset(){
+this.x=Math.random()*w;
+this.y=Math.random()*h;
+this.size=Math.random()*2+0.3;
+this.speedX=(Math.random()-0.5)*0.4;
+this.speedY=(Math.random()-0.5)*0.4;
+this.opacity=Math.random()*0.4+0.08;
+}
+update(){
+this.x+=this.speedX;
+this.y+=this.speedY;
+if(this.x<0||this.x>w||this.y<0||this.y>h)this.reset();
+}
+draw(){
+ctx.beginPath();
+ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+ctx.fillStyle=`rgba(255,51,51,${this.opacity})`;
+ctx.fill();
+}
+}
+for(let i=0;i<70;i++)particles.push(new Particle());
+function animate(){
+ctx.clearRect(0,0,w,h);
+for(let p of particles){p.update();p.draw()}
+for(let i=0;i<particles.length;i++){
+for(let j=i+1;j<particles.length;j++){
+const dx=particles[i].x-particles[j].x;
+const dy=particles[i].y-particles[j].y;
+const dist=Math.sqrt(dx*dx+dy*dy);
+if(dist<150){
+ctx.beginPath();
+ctx.moveTo(particles[i].x,particles[i].y);
+ctx.lineTo(particles[j].x,particles[j].y);
+ctx.strokeStyle=`rgba(204,0,0,${0.06*(1-dist/150)})`;
+ctx.lineWidth=0.5;
+ctx.stroke();
+}
+}
+}
+requestAnimationFrame(animate);
+}
+animate();
 
-        // ===== SCROLL REVEAL =====
-        const revealElements = document.querySelectorAll('.reveal');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-        revealElements.forEach(el => observer.observe(el));
+const menuToggle=document.getElementById('menu-toggle');
+const navLinks=document.getElementById('nav-links');
+menuToggle.addEventListener('click',function(){
+navLinks.classList.toggle('open');
+const icon=this.querySelector('i');
+icon.classList.toggle('fa-bars');
+icon.classList.toggle('fa-times');
+});
+document.querySelectorAll('.nav-links a').forEach(a=>{
+a.addEventListener('click',function(){
+navLinks.classList.remove('open');
+const icon=menuToggle.querySelector('i');
+icon.classList.add('fa-bars');
+icon.classList.remove('fa-times');
+});
+});
 
-        // ===== ANIMATED COUNTERS =====
-        function animateCounters() {
-            const counters = document.querySelectorAll('[data-count]');
-            counters.forEach(counter => {
-                const target = parseInt(counter.getAttribute('data-count'), 10);
-                const duration = 2000;
-                const step = Math.ceil(target / (duration / 16));
-                let current = 0;
+const navbar=document.getElementById('navbar');
+window.addEventListener('scroll',function(){
+navbar.classList.toggle('scrolled',window.scrollY>60);
+const btt=document.getElementById('back-to-top');
+btt.classList.toggle('visible',window.scrollY>400);
+});
 
-                const update = () => {
-                    current += step;
-                    if (current >= target) {
-                        counter.textContent = target.toLocaleString();
-                        return;
-                    }
-                    counter.textContent = current.toLocaleString();
-                    requestAnimationFrame(update);
-                };
-                update();
-            });
-        }
+document.getElementById('back-to-top').addEventListener('click',function(){
+window.scrollTo({top:0,behavior:'smooth'});
+});
 
-        const dashboardObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    animateCounters();
-                    dashboardObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.3 });
-        const dashboardSection = document.querySelector('.dashboard');
-        if (dashboardSection) dashboardObserver.observe(dashboardSection);
+const faqItems=document.querySelectorAll('.faq-item');
+faqItems.forEach(item=>{
+item.addEventListener('click',function(){
+this.classList.toggle('open');
+});
+});
 
-        // ===== FAQ ACCORDION =====
-        document.querySelectorAll('.faq-question').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const item = btn.parentElement;
-                const isOpen = item.classList.contains('open');
-                document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
-                if (!isOpen) item.classList.add('open');
-            });
-        });
+const revealEls=document.querySelectorAll('.reveal');
+const observer=new IntersectionObserver(function(entries){
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+entry.target.classList.add('visible');
+observer.unobserve(entry.target);
+}
+});
+},{threshold:0.1,rootMargin:'0px 0px -30px 0px'});
+revealEls.forEach(el=>observer.observe(el));
 
-        // ===== DOWNLOAD SIMULATION =====
-        const downloadBtn = document.getElementById('downloadBtn');
-        const uploadProgress = document.getElementById('uploadProgress');
-        const progressFill = document.getElementById('progressFill');
-        const uploadStatus = document.getElementById('uploadStatus');
+function animateCounters(){
+const counters=document.querySelectorAll('.count');
+counters.forEach(counter=>{
+const target=parseFloat(counter.getAttribute('data-target'));
+const isFloat=target%1!==0;
+const duration=2000;
+const step=Math.max(Math.floor(target/60),1);
+let current=0;
+const updateCounter=setInterval(function(){
+current+=step;
+if(current>=target){
+counter.textContent=isFloat?(target/10).toFixed(1):target.toLocaleString();
+clearInterval(updateCounter);
+}else{
+counter.textContent=isFloat?(current/10).toFixed(1):current.toLocaleString();
+}
+},duration/60);
+});
+}
+const countObserver=new IntersectionObserver(function(entries){
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+animateCounters();
+countObserver.disconnect();
+}
+});
+},{threshold:0.4});
+const allCounters=document.querySelectorAll('.stats-section, .counters-grid');
+allCounters.forEach(el=>countObserver.observe(el));
 
-        downloadBtn.addEventListener('click', () => {
-            uploadProgress.classList.add('active');
-            downloadBtn.disabled = true;
-            downloadBtn.style.opacity = '0.5';
-            let progress = 0;
-            const messages = [
-                'Initializing...',
-                'Connecting to server...',
-                'Downloading...',
-                'Verifying integrity...',
-                'Completed! ✓'
-            ];
-
-            const interval = setInterval(() => {
-                progress += Math.random() * 8 + 2;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    progressFill.style.width = '100%';
-                    uploadStatus.textContent = messages[4];
-                    downloadBtn.textContent = '⬇ Download Again';
-                    downloadBtn.disabled = false;
-                    downloadBtn.style.opacity = '1';
-                    setTimeout(() => {
-                        uploadProgress.classList.remove('active');
-                        progressFill.style.width = '0%';
-                        downloadBtn.textContent = '⬇ Download Now (ZIP)';
-                    }, 2500);
-                    return;
-                }
-                progressFill.style.width = progress + '%';
-
-                if (progress < 20) uploadStatus.textContent = messages[0];
-                else if (progress < 45) uploadStatus.textContent = messages[1];
-                else if (progress < 75) uploadStatus.textContent = messages[2];
-                else if (progress < 98) uploadStatus.textContent = messages[3];
-            }, 150);
-        });
-
-        // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href === '#') return;
-                e.preventDefault();
-                const target = document.querySelector(href);
-                if (target) {
-                    const offset = 80;
-                    const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-                    window.scrollTo({ top, behavior: 'smooth' });
-                }
-            });
-        });
-    </script>
+});
+</script>
 </body>
 </html>
